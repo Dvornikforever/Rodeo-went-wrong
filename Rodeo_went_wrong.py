@@ -1,11 +1,65 @@
 import pygame
 from sys import exit
 from os import path
+from random import sample
 
 pygame.init()
-screen = pygame.display.set_mode((600, 600))
+screen = pygame.display.set_mode((500, 500))
 clock = pygame.time.Clock()
-FPS = 60
+
+
+def generate_map():
+
+    """''
+    Условные обозначения карты:
+    . - песок
+    # - коробка
+    @ - игрок
+    * - бык
+    ''"""
+
+    with open('data/map.txt', mode='w', encoding='utf-8') as map_file:
+        for i in range(11):
+            line = ['.' for _ in range(11)]
+            a = [n for n in range(11)]
+            four_random_box_places_on_line = sample(a, len(a))[:2]
+            for ind in four_random_box_places_on_line:
+                line[ind] = '#'
+            line += '\n'
+            if i == 5:
+                line[5] = '@'
+            elif i == 7:
+                line[5] = '*'
+            line = ''.join(line)
+            map_file.write(line)
+
+
+generate_map()  # then change to changing every 15 seconds
+
+
+def load_level(filename):
+    filename = "data/" + filename
+    # читаем уровень, убирая символы перевода строки
+    with open(filename, 'r') as mapFile:
+        level_map = [line.strip() for line in mapFile]
+
+    return level_map
+
+
+class Tile(pygame.sprite.Sprite):
+    def __init__(self, tile_type, pos_x, pos_y):
+        super().__init__(tiles_group, all_sprites)
+        self.image = tile_images[tile_type]
+        self.rect = self.image.get_rect().move(
+            tile_width * pos_x, tile_height * pos_y)
+
+
+class Character(pygame.sprite.Sprite):
+    def __init__(self, img, pos_x, pos_y):
+        super().__init__(characters_group, all_sprites)
+        self.image = img
+        self.rect = self.image.get_rect().move(
+            tile_width * pos_x, tile_height * pos_y)
 
 
 class Camera:
@@ -21,8 +75,8 @@ class Camera:
 
     # позиционировать камеру на объекте target
     def update(self, target):
-        self.dx = -(target.rect.x + target.rect.w // 2 - 600 // 2)
-        self.dy = -(target.rect.y + target.rect.h // 2 - 600 // 2)
+        self.dx = -(target.rect.x + target.rect.w // 2 - 500 // 2)
+        self.dy = -(target.rect.y + target.rect.h // 2 - 500 // 2)
 
 
 def load_image(img, color_key=None):
@@ -41,24 +95,64 @@ def load_image(img, color_key=None):
     return img
 
 
+tile_images = {
+    'wall': pygame.transform.scale(load_image('box.png'), (50, 50)),
+    'empty': pygame.transform.scale(load_image('sand.jpg'), (50, 50))
+}
+guy_image = pygame.transform.scale(load_image('guy_sprites.png'), (50, 50))
+bull_image = pygame.transform.scale(load_image('bull_sprites.png'), (50, 50))
+
+tile_width = tile_height = 50
+
+
+# основные персонажи
+guy = None
+bull = None
+
+# группы спрайтов
+all_sprites = pygame.sprite.Group()
+tiles_group = pygame.sprite.Group()
+characters_group = pygame.sprite.Group()
+
+
 def start_screen():
     title = "               Rodeo went wrong"
 
-    fon = pygame.transform.scale(load_image('start_screen.webp'), (600, 600))
+    fon = pygame.transform.scale(load_image('start_screen.webp'), (500, 500))
     screen.blit(fon, (0, 0))
-    pygame.draw.rect(screen, 'black', (108, 10, 390, 90))
-    pygame.draw.rect(screen, (205, 155, 29), (108, 10, 390, 90), 5)
 
+    # отрисовка рамки
+    pygame.draw.rect(screen, 'black', (78, 10, 350, 90))
+    pygame.draw.rect(screen, (205, 155, 29), (78, 10, 350, 90), 5)
+
+    # шрифт
     font = pygame.font.Font(None, 50)
-    text_coord = 25
 
     string_rendered = font.render(title, 1, pygame.Color((205, 155, 29)))
-    intro_rect = string_rendered.get_rect()
-    text_coord += 10
-    intro_rect.top = text_coord
-    intro_rect.x = 10
-    text_coord += intro_rect.height
-    screen.blit(string_rendered, intro_rect)
+    screen.blit(string_rendered, (-37, 35))
+
+
+def final_screen():
+    pass
+
+
+def generate_level(level):
+    the_guy, the_bull, x, y = None, None, None, None
+    for y in range(len(level)):
+        for x in range(len(level[y])):
+            if level[y][x] == '.':
+                Tile('empty', x, y)
+            elif level[y][x] == '#':
+                Tile('wall', x, y)
+            elif level[y][x] == '@':
+                Tile('empty', x, y)
+                the_guy = Character(guy_image, x, y)
+            elif level[y][x] == '*':
+                Tile('empty', x, y)
+                the_bull = Character(bull_image, x, y)
+
+    # вернем игрока, а также размер поля в клетках
+    return the_guy, the_bull, x, y
 
 
 def terminate():  # if event.type == pygame.QUIT:
@@ -66,57 +160,137 @@ def terminate():  # if event.type == pygame.QUIT:
     exit()
 
 
-def move_up():
-    pass
+lvl_map = load_level('map.txt')
+guy, bull, level_x, level_y = generate_level(load_level('map.txt'))
 
 
-def move_down():
-    pass
-
-
-def move_right():
-    pass
-
-
-def move_left():
+def check_if_reversed():
     pass
 
 
 def main():
     camera = Camera()
     start_screen()
+    start_screen_ends = False
+
+    # для правильной работы камеры
+    guy_x = guy.rect.x
+    guy_y = guy.rect.y
+    bull_x = bull.rect.x
+    bull_y = bull.rect.y
+
+    # флаги направления игрока
+    up = True
+    down = False
+    right = False
+    left = False
+
+    directions = ['up']  # для того чтобы определить, в какую сторону скользить
+
     while True:
         for event in pygame.event.get():
-
             if event.type == pygame.QUIT:
                 terminate()
 
             if event.type == pygame.KEYDOWN:
-
+                start_screen_ends = True
                 if event.key == pygame.K_UP:  # ВВЕРХ
-                    move_up()
+                    up = True
+                    down = False
+                    right = False
+                    left = False
+
+                    directions.append('up')
 
                 elif event.key == pygame.K_DOWN:  # ВНИЗ
-                    move_down()
+                    down = True
+                    right = False
+                    left = False
+                    up = False
+
+                    directions.append('down')
 
                 elif event.key == pygame.K_RIGHT:  # ВПРАВО
-                    move_right()
+                    right = True
+                    left = False
+                    up = False
+                    down = False
+
+                    directions.append('right')
 
                 elif event.key == pygame.K_LEFT:  # ВЛЕВО
-                    move_left()
+                    left = True
+                    up = False
+                    down = False
+                    right = False
 
-                """""
-                # изменяем ракурс камеры
-                camera.update(player)
-                # обновляем положение всех спрайтов
-                for sprite in all_sprites:
-                    camera.apply(sprite)
-                """""
+                    directions.append('left')
 
-                screen.fill('black')
-                # drawing of sprites
-                clock.tick(FPS)
-            pygame.display.flip()
+        if start_screen_ends:
+
+            if up:  # ВВЕРХ
+                if guy_y > 0:
+                    if guy_x % tile_width == 0:
+                        if lvl_map[(guy_y - 1) // tile_height][guy_x // tile_width] != '#':
+                            guy.rect.y -= 1
+                            guy_y -= 1
+
+                    else:
+                        if lvl_map[(guy_y - 1) // tile_height][guy_x // tile_width] != '#' and \
+                                lvl_map[(guy_y - 1) // tile_height][guy_x // tile_width + 1] != '#':
+                            guy.rect.y -= 1
+                            guy_y -= 1
+
+            elif down:  # ВНИЗ
+                if guy_y < 500:
+                    if guy_x % tile_width == 0:
+                        if lvl_map[(guy_y + tile_height) // tile_height][guy_x // tile_width] != '#':
+                            guy.rect.y += 1
+                            guy_y += 1
+
+                    else:
+                        if lvl_map[(guy_y + tile_height) // tile_height][guy_x // tile_width] != '#' and\
+                                lvl_map[(guy_y + tile_height) // tile_height][guy_x // tile_width + 1] != '#':
+                            guy.rect.y += 1
+                            guy_y += 1
+
+            elif right:  # ВПРАВО
+                if guy_x < 500:
+                    if guy_y % tile_height == 0:
+                        if lvl_map[guy_y // tile_height][(guy_x + tile_width) // tile_width] != '#':
+                            guy.rect.x += 1
+                            guy_x += 1
+
+                    else:
+                        if lvl_map[guy_y // tile_height][(guy_x + tile_width) // tile_width] != '#' and \
+                                lvl_map[guy_y // tile_height + 1][(guy_x + tile_width) // tile_width] != '#':
+                            guy.rect.x += 1
+                            guy_x += 1
+
+            elif left:  # ВЛЕВО
+                if guy_x > 0:
+                    if guy_y % tile_height == 0:
+                        if lvl_map[guy_y // tile_height][(guy_x - 1) // tile_width] != '#':
+                            guy.rect.x -= 1
+                            guy_x -= 1
+
+                    else:
+                        if lvl_map[guy_y // tile_height][(guy_x - 1) // tile_width] != '#' and\
+                                lvl_map[guy_y // tile_height + 1][(guy_x - 1) // tile_width] != '#':
+                            guy.rect.x -= 1
+                            guy_x -= 1
+
+            # изменяем ракурс камеры
+            camera.update(guy)
+            # обновляем положение всех спрайтов
+            for sprite in all_sprites:
+                camera.apply(sprite)
+
+            screen.fill('black')
+            tiles_group.draw(screen)
+            characters_group.draw(screen)
+            clock.tick(200)
+        pygame.display.flip()
 
 
 if __name__ == '__main__':
