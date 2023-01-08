@@ -235,11 +235,43 @@ def main():
                             guy.rect.y -= 1
                             guy_y -= 1
 
+                        else:  # скольжение
+                            pygame.time.wait(30)
+                            try:
+                                if directions[-2] == 'right' or directions[-2] == 'down':
+                                    if guy_x < 500:
+                                        if lvl_map[guy_y // tile_height][(guy_x + tile_width) // tile_width] != '#':
+                                            guy.rect.x += 1
+                                            guy_x += 1
+                                else:
+                                    if guy_x > 0:
+                                        if lvl_map[guy_y // tile_height][(guy_x - 1) // tile_width] != '#':
+                                            guy.rect.x -= 1
+                                            guy_x -= 1
+                            except KeyError:  # такое может произойти в начале игры
+                                if guy_x > 0:
+                                    if lvl_map[guy_y // tile_height][(guy_x - 1) // tile_width] != '#':
+                                        guy.rect.x -= 1
+                                        guy_x -= 1
+
                     else:
                         if lvl_map[(guy_y - 1) // tile_height][guy_x // tile_width] != '#' and \
                                 lvl_map[(guy_y - 1) // tile_height][guy_x // tile_width + 1] != '#':
                             guy.rect.y -= 1
                             guy_y -= 1
+
+                        else:  # скольжение
+                            pygame.time.wait(30)
+                            if directions[-2] == 'right' or directions[-2] == 'down':
+                                if guy_x < 500:
+                                    if lvl_map[guy_y // tile_height][(guy_x + tile_width) // tile_width] != '#':
+                                        guy.rect.x += 1
+                                        guy_x += 1
+                            else:
+                                if guy_x > 0:
+                                    if lvl_map[guy_y // tile_height][(guy_x - 1) // tile_width] != '#':
+                                        guy.rect.x -= 1
+                                        guy_x -= 1
 
             elif down:  # ВНИЗ
                 if guy_y < 500:
@@ -248,11 +280,37 @@ def main():
                             guy.rect.y += 1
                             guy_y += 1
 
+                        else:  # скольжение
+                            pygame.time.wait(30)
+                            if directions[-2] == 'right' or directions[-2] == 'down':
+                                if guy_x < 500:
+                                    if lvl_map[guy_y // tile_height][(guy_x + tile_width) // tile_width] != '#':
+                                        guy.rect.x += 1
+                                        guy_x += 1
+                            else:
+                                if guy_x > 0:
+                                    if lvl_map[guy_y // tile_height][(guy_x - 1) // tile_width] != '#':
+                                        guy.rect.x -= 1
+                                        guy_x -= 1
+
                     else:
                         if lvl_map[(guy_y + tile_height) // tile_height][guy_x // tile_width] != '#' and\
                                 lvl_map[(guy_y + tile_height) // tile_height][guy_x // tile_width + 1] != '#':
                             guy.rect.y += 1
                             guy_y += 1
+
+                        else:  # скольжение
+                            pygame.time.wait(30)
+                            if directions[-2] == 'right' or directions[-2] == 'down':
+                                if guy_x < 500:
+                                    if lvl_map[guy_y // tile_height][(guy_x + tile_width) // tile_width] != '#':
+                                        guy.rect.x += 1
+                                        guy_x += 1
+                            else:
+                                if guy_x > 0:
+                                    if lvl_map[guy_y // tile_height][(guy_x - 1) // tile_width] != '#':
+                                        guy.rect.x -= 1
+                                        guy_x -= 1
 
             elif right:  # ВПРАВО
                 if guy_x < 500:
@@ -261,11 +319,37 @@ def main():
                             guy.rect.x += 1
                             guy_x += 1
 
+                        else:  # скольжение
+                            pygame.time.wait(30)
+                            if directions[-2] == 'up' or directions[-2] == 'left':
+                                if guy_y > 0:
+                                    if lvl_map[(guy_y - 1) // tile_height][guy_x // tile_width] != '#':
+                                        guy.rect.y -= 1
+                                        guy_y -= 1
+                            else:
+                                if guy_y < 500:
+                                    if lvl_map[(guy_y + tile_height) // tile_height][guy_x // tile_width] != '#':
+                                        guy.rect.y += 1
+                                        guy_y += 1
+
                     else:
                         if lvl_map[guy_y // tile_height][(guy_x + tile_width) // tile_width] != '#' and \
                                 lvl_map[guy_y // tile_height + 1][(guy_x + tile_width) // tile_width] != '#':
                             guy.rect.x += 1
                             guy_x += 1
+
+                        else:  # скольжение
+                            pygame.time.wait(30)
+                            if directions[-2] == 'up' or directions[-2] == 'left':
+                                if guy_y > 0:
+                                    if lvl_map[(guy_y - 1) // tile_height][guy_x // tile_width] != '#':
+                                        guy.rect.y -= 1
+                                        guy_y -= 1
+                            else:
+                                if guy_y < 500:
+                                    if lvl_map[(guy_y + tile_height) // tile_height][guy_x // tile_width] != '#':
+                                        guy.rect.y += 1
+                                        guy_y += 1
 
             elif left:  # ВЛЕВО
                 if guy_x > 0:
@@ -274,11 +358,37 @@ def main():
                             guy.rect.x -= 1
                             guy_x -= 1
 
+                        else:  # скольжение
+                            pygame.time.wait(30)
+                            if directions[-2] == 'up' or directions[-2] == 'left':
+                                if guy_y > 0:
+                                    if lvl_map[(guy_y - 1) // tile_height][guy_x // tile_width] != '#':
+                                        guy.rect.y -= 1
+                                        guy_y -= 1
+                            else:
+                                if guy_y < 500:
+                                    if lvl_map[(guy_y + tile_height) // tile_height][guy_x // tile_width] != '#':
+                                        guy.rect.y += 1
+                                        guy_y += 1
+
                     else:
                         if lvl_map[guy_y // tile_height][(guy_x - 1) // tile_width] != '#' and\
                                 lvl_map[guy_y // tile_height + 1][(guy_x - 1) // tile_width] != '#':
                             guy.rect.x -= 1
                             guy_x -= 1
+
+                        else:  # скольжение
+                            pygame.time.wait(30)
+                            if directions[-2] == 'up' or directions[-2] == 'left':
+                                if guy_y > 0:
+                                    if lvl_map[(guy_y - 1) // tile_height][guy_x // tile_width] != '#':
+                                        guy.rect.y -= 1
+                                        guy_y -= 1
+                            else:
+                                if guy_y < 500:
+                                    if lvl_map[(guy_y + tile_height) // tile_height][guy_x // tile_width] != '#':
+                                        guy.rect.y += 1
+                                        guy_y += 1
 
             # изменяем ракурс камеры
             camera.update(guy)
