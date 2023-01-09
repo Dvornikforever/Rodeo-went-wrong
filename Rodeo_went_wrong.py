@@ -21,12 +21,14 @@ def generate_map():
         for i in range(11):
             line = ['.' for _ in range(11)]
             a = [n for n in range(11)]
-            four_random_box_places_on_line = sample(a, len(a))[:2]
+            four_random_box_places_on_line = sample(a, len(a))[:3]
             for ind in four_random_box_places_on_line:
                 line[ind] = '#'
             line += '\n'
             if i == 5:
                 line[5] = '@'
+            elif i in [4, 3, 6, 7]:
+                line[5] = '.'
             elif i == 8:
                 line[5] = '*'
             line = ''.join(line)
@@ -162,39 +164,11 @@ lvl_map = load_level('map.txt')
 guy, bull, level_x, level_y = generate_level(load_level('map.txt'))
 
 '''belongs to main'''
-directions = ['up', 'up']  # для того чтобы определить, в какую сторону скользить и корректировки направления быка
+directions = ['up', 'up']  # для того чтобы определить, в какую сторону скользить
 
 # список действий быка
 # запас хода быка по вертикали в две клетки (100 пикселей), т.к в начале игры между игроком и быком это расстояние
 bull_doings = ['bull.rect.y - 1' for _ in range(150)]
-
-
-def bull_up():
-    if directions[-2] == 'down':
-        bull_doings.append('bull.rect.y + 1')
-    else:
-        bull_doings.append('bull.rect.y - 1')
-
-
-def bull_down():
-    if directions[-2] == 'up':
-        bull_doings.append('bull.rect.y - 1')
-    else:
-        bull_doings.append('bull.rect.y + 1')
-
-
-def bull_right():
-    if directions[-2] == 'left':
-        bull_doings.append('bull.rect.x - 1')
-    else:
-        bull_doings.append('bull.rect.x + 1')
-
-
-def bull_left():
-    if directions[-2] == 'right':
-        bull_doings.append('bull.rect.x + 1')
-    else:
-        bull_doings.append('bull.rect.x - 1')
 
 
 def main():
@@ -208,6 +182,8 @@ def main():
 
     # флаги направления игрока
     up, down, right, left = True, False, False, False
+
+    sliding = False  # флаг скольжения
 
     while True:
         for event in pygame.event.get():
@@ -259,32 +235,25 @@ def main():
                             guy.rect.y -= 1
                             guy_y -= 1
 
-                            bull_up()
+                            bull_doings.append('bull.rect.y - 1')
+                            sliding = False
 
                         else:  # скольжение
-                            pygame.time.wait(30)
-                            try:
-                                if directions[-2] == 'right' or directions[-2] == 'down':
-                                    if guy_x < 500:
-                                        if lvl_map[guy_y // tile_height][(guy_x + tile_width) // tile_width] != '#':
-                                            guy.rect.x += 1
-                                            guy_x += 1
+                            sliding = True
+                            if directions[-2] == 'right' or directions[-2] == 'down':
+                                if guy_x < 500:
+                                    if lvl_map[guy_y // tile_height][(guy_x + tile_width) // tile_width] != '#':
+                                        guy.rect.x += 1
+                                        guy_x += 1
 
-                                            bull_right()
-                                else:
-                                    if guy_x > 0:
-                                        if lvl_map[guy_y // tile_height][(guy_x - 1) // tile_width] != '#':
-                                            guy.rect.x -= 1
-                                            guy_x -= 1
-
-                                            bull_left()
-                            except KeyError:  # такое может произойти в начале игры
+                                        bull_doings.append('bull.rect.x + 1')
+                            else:
                                 if guy_x > 0:
                                     if lvl_map[guy_y // tile_height][(guy_x - 1) // tile_width] != '#':
                                         guy.rect.x -= 1
                                         guy_x -= 1
 
-                                        bull_left()
+                                        bull_doings.append('bull.rect.x - 1')
 
                     else:
                         if lvl_map[(guy_y - 1) // tile_height][guy_x // tile_width] != '#' and \
@@ -292,24 +261,25 @@ def main():
                             guy.rect.y -= 1
                             guy_y -= 1
 
-                            bull_up()
+                            bull_doings.append('bull.rect.y - 1')
+                            sliding = False
 
                         else:  # скольжение
-                            pygame.time.wait(30)
+                            sliding = True
                             if directions[-2] == 'right' or directions[-2] == 'down':
                                 if guy_x < 500:
                                     if lvl_map[guy_y // tile_height][(guy_x + tile_width) // tile_width] != '#':
                                         guy.rect.x += 1
                                         guy_x += 1
 
-                                        bull_right()
+                                        bull_doings.append('bull.rect.x + 1')
                             else:
                                 if guy_x > 0:
                                     if lvl_map[guy_y // tile_height][(guy_x - 1) // tile_width] != '#':
                                         guy.rect.x -= 1
                                         guy_x -= 1
 
-                                        bull_left()
+                                        bull_doings.append('bull.rect.x - 1')
 
             elif down:  # ВНИЗ
 
@@ -320,24 +290,25 @@ def main():
                             guy.rect.y += 1
                             guy_y += 1
 
-                            bull_down()
+                            bull_doings.append('bull.rect.y + 1')
+                            sliding = False
 
                         else:  # скольжение
-                            pygame.time.wait(30)
+                            sliding = True
                             if directions[-2] == 'right' or directions[-2] == 'down':
                                 if guy_x < 500:
                                     if lvl_map[guy_y // tile_height][(guy_x + tile_width) // tile_width] != '#':
                                         guy.rect.x += 1
                                         guy_x += 1
 
-                                        bull_right()
+                                        bull_doings.append('bull.rect.x + 1')
                             else:
                                 if guy_x > 0:
                                     if lvl_map[guy_y // tile_height][(guy_x - 1) // tile_width] != '#':
                                         guy.rect.x -= 1
                                         guy_x -= 1
 
-                                        bull_left()
+                                        bull_doings.append('bull.rect.x - 1')
 
                     else:
                         if lvl_map[(guy_y + tile_height) // tile_height][guy_x // tile_width] != '#' and \
@@ -345,24 +316,25 @@ def main():
                             guy.rect.y += 1
                             guy_y += 1
 
-                            bull_down()
+                            bull_doings.append('bull.rect.y + 1')
+                            sliding = False
 
                         else:  # скольжение
-                            pygame.time.wait(30)
+                            sliding = True
                             if directions[-2] == 'right' or directions[-2] == 'down':
                                 if guy_x < 500:
                                     if lvl_map[guy_y // tile_height][(guy_x + tile_width) // tile_width] != '#':
                                         guy.rect.x += 1
                                         guy_x += 1
 
-                                        bull_right()
+                                        bull_doings.append('bull.rect.x + 1')
                             else:
                                 if guy_x > 0:
                                     if lvl_map[guy_y // tile_height][(guy_x - 1) // tile_width] != '#':
                                         guy.rect.x -= 1
                                         guy_x -= 1
 
-                                        bull_left()
+                                        bull_doings.append('bull.rect.x - 1')
 
             elif right:  # ВПРАВО
 
@@ -373,24 +345,25 @@ def main():
                             guy.rect.x += 1
                             guy_x += 1
 
-                            bull_right()
+                            bull_doings.append('bull.rect.x + 1')
+                            sliding = False
 
                         else:  # скольжение
-                            pygame.time.wait(30)
+                            sliding = True
                             if directions[-2] == 'up' or directions[-2] == 'left':
                                 if guy_y > 0:
                                     if lvl_map[(guy_y - 1) // tile_height][guy_x // tile_width] != '#':
                                         guy.rect.y -= 1
                                         guy_y -= 1
 
-                                        bull_up()
+                                        bull_doings.append('bull.rect.y - 1')
                             else:
                                 if guy_y < 500:
                                     if lvl_map[(guy_y + tile_height) // tile_height][guy_x // tile_width] != '#':
                                         guy.rect.y += 1
                                         guy_y += 1
 
-                                        bull_down()
+                                        bull_doings.append('bull.rect.y + 1')
 
                     else:
                         if lvl_map[guy_y // tile_height][(guy_x + tile_width) // tile_width] != '#' and \
@@ -398,24 +371,25 @@ def main():
                             guy.rect.x += 1
                             guy_x += 1
 
-                            bull_right()
+                            bull_doings.append('bull.rect.x + 1')
+                            sliding = False
 
                         else:  # скольжение
-                            pygame.time.wait(30)
+                            sliding = True
                             if directions[-2] == 'up' or directions[-2] == 'left':
                                 if guy_y > 0:
                                     if lvl_map[(guy_y - 1) // tile_height][guy_x // tile_width] != '#':
                                         guy.rect.y -= 1
                                         guy_y -= 1
 
-                                        bull_up()
+                                        bull_doings.append('bull.rect.y - 1')
                             else:
                                 if guy_y < 500:
                                     if lvl_map[(guy_y + tile_height) // tile_height][guy_x // tile_width] != '#':
                                         guy.rect.y += 1
                                         guy_y += 1
 
-                                        bull_down()
+                                        bull_doings.append('bull.rect.y + 1')
 
             elif left:  # ВЛЕВО
 
@@ -426,24 +400,25 @@ def main():
                             guy.rect.x -= 1
                             guy_x -= 1
 
-                            bull_left()
+                            bull_doings.append('bull.rect.x - 1')
+                            sliding = False
 
                         else:  # скольжение
-                            pygame.time.wait(30)
+                            sliding = True
                             if directions[-2] == 'up' or directions[-2] == 'left':
                                 if guy_y > 0:
                                     if lvl_map[(guy_y - 1) // tile_height][guy_x // tile_width] != '#':
                                         guy.rect.y -= 1
                                         guy_y -= 1
 
-                                        bull_up()
+                                        bull_doings.append('bull.rect.y - 1')
                             else:
                                 if guy_y < 500:
                                     if lvl_map[(guy_y + tile_height) // tile_height][guy_x // tile_width] != '#':
                                         guy.rect.y += 1
                                         guy_y += 1
 
-                                        bull_down()
+                                        bull_doings.append('bull.rect.y + 1')
 
                     else:
                         if lvl_map[guy_y // tile_height][(guy_x - 1) // tile_width] != '#' and \
@@ -451,24 +426,25 @@ def main():
                             guy.rect.x -= 1
                             guy_x -= 1
 
-                            bull_left()
+                            bull_doings.append('bull.rect.x - 1')
+                            sliding = False
 
                         else:  # скольжение
-                            pygame.time.wait(30)
+                            sliding = True
                             if directions[-2] == 'up' or directions[-2] == 'left':
                                 if guy_y > 0:
                                     if lvl_map[(guy_y - 1) // tile_height][guy_x // tile_width] != '#':
                                         guy.rect.y -= 1
                                         guy_y -= 1
 
-                                        bull_up()
+                                        bull_doings.append('bull.rect.y - 1')
                             else:
                                 if guy_y < 500:
                                     if lvl_map[(guy_y + tile_height) // tile_height][guy_x // tile_width] != '#':
                                         guy.rect.y += 1
                                         guy_y += 1
 
-                                        bull_down()
+                                        bull_doings.append('bull.rect.y + 1')
 
             # движение быка
             if 'y' in bull_doings[0]:
@@ -485,7 +461,10 @@ def main():
             screen.fill('black')
             tiles_group.draw(screen)
             characters_group.draw(screen)
-            clock.tick(200)
+            if not sliding:  # normally
+                clock.tick(200)
+            else:
+                clock.tick(100)
         pygame.display.flip()
 
 
