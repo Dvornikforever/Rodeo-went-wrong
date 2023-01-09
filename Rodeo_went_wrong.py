@@ -172,37 +172,29 @@ bull_doings = ['bull.rect.y - 1' for _ in range(150)]
 def bull_up():
     if directions[-2] == 'down':
         bull_doings.append('bull.rect.y + 1')
-        return '+'
     else:
         bull_doings.append('bull.rect.y - 1')
-        return '-'
 
 
 def bull_down():
     if directions[-2] == 'up':
         bull_doings.append('bull.rect.y - 1')
-        return '-'
     else:
         bull_doings.append('bull.rect.y + 1')
-        return '+'
 
 
 def bull_right():
     if directions[-2] == 'left':
         bull_doings.append('bull.rect.x - 1')
-        return '-'
     else:
         bull_doings.append('bull.rect.x + 1')
-        return '+'
 
 
 def bull_left():
     if directions[-2] == 'right':
         bull_doings.append('bull.rect.x + 1')
-        return '+'
     else:
         bull_doings.append('bull.rect.x - 1')
-        return '-'
 
 
 def main():
@@ -213,14 +205,9 @@ def main():
     # для правильной работы камеры
     guy_x = guy.rect.x
     guy_y = guy.rect.y
-    bull_x = bull.rect.x
-    bull_y = bull.rect.y
 
     # флаги направления игрока
     up, down, right, left = True, False, False, False
-
-    # флаги направления быка
-    up_bull, down_bull, right_bull, left_bull = True, False, False, False
 
     while True:
         for event in pygame.event.get():
@@ -272,7 +259,7 @@ def main():
                             guy.rect.y -= 1
                             guy_y -= 1
 
-                            up_bull, down_bull, right_bull, left_bull = True, False, False, False
+                            bull_up()
 
                         else:  # скольжение
                             pygame.time.wait(30)
@@ -283,21 +270,21 @@ def main():
                                             guy.rect.x += 1
                                             guy_x += 1
 
-                                            up_bull, down_bull, right_bull, left_bull = False, False, True, False
+                                            bull_right()
                                 else:
                                     if guy_x > 0:
                                         if lvl_map[guy_y // tile_height][(guy_x - 1) // tile_width] != '#':
                                             guy.rect.x -= 1
                                             guy_x -= 1
 
-                                            up_bull, down_bull, right_bull, left_bull = False, False, False, True
+                                            bull_left()
                             except KeyError:  # такое может произойти в начале игры
                                 if guy_x > 0:
                                     if lvl_map[guy_y // tile_height][(guy_x - 1) // tile_width] != '#':
                                         guy.rect.x -= 1
                                         guy_x -= 1
 
-                                        up_bull, down_bull, right_bull, left_bull = False, False, False, True
+                                        bull_left()
 
                     else:
                         if lvl_map[(guy_y - 1) // tile_height][guy_x // tile_width] != '#' and \
@@ -305,7 +292,7 @@ def main():
                             guy.rect.y -= 1
                             guy_y -= 1
 
-                            up_bull, down_bull, right_bull, left_bull = True, False, False, False
+                            bull_up()
 
                         else:  # скольжение
                             pygame.time.wait(30)
@@ -315,14 +302,14 @@ def main():
                                         guy.rect.x += 1
                                         guy_x += 1
 
-                                        up_bull, down_bull, right_bull, left_bull = False, False, True, False
+                                        bull_right()
                             else:
                                 if guy_x > 0:
                                     if lvl_map[guy_y // tile_height][(guy_x - 1) // tile_width] != '#':
                                         guy.rect.x -= 1
                                         guy_x -= 1
 
-                                        up_bull, down_bull, right_bull, left_bull = False, False, False, True
+                                        bull_left()
 
             elif down:  # ВНИЗ
 
@@ -333,7 +320,7 @@ def main():
                             guy.rect.y += 1
                             guy_y += 1
 
-                            up_bull, down_bull, right_bull, left_bull = False, True, False, False
+                            bull_down()
 
                         else:  # скольжение
                             pygame.time.wait(30)
@@ -343,14 +330,14 @@ def main():
                                         guy.rect.x += 1
                                         guy_x += 1
 
-                                        up_bull, down_bull, right_bull, left_bull = False, False, True, False
+                                        bull_right()
                             else:
                                 if guy_x > 0:
                                     if lvl_map[guy_y // tile_height][(guy_x - 1) // tile_width] != '#':
                                         guy.rect.x -= 1
                                         guy_x -= 1
 
-                                        up_bull, down_bull, right_bull, left_bull = False, False, False, True
+                                        bull_left()
 
                     else:
                         if lvl_map[(guy_y + tile_height) // tile_height][guy_x // tile_width] != '#' and \
@@ -358,7 +345,7 @@ def main():
                             guy.rect.y += 1
                             guy_y += 1
 
-                            up_bull, down_bull, right_bull, left_bull = False, True, False, False
+                            bull_down()
 
                         else:  # скольжение
                             pygame.time.wait(30)
@@ -368,14 +355,14 @@ def main():
                                         guy.rect.x += 1
                                         guy_x += 1
 
-                                        up_bull, down_bull, right_bull, left_bull = False, False, True, False
+                                        bull_right()
                             else:
                                 if guy_x > 0:
                                     if lvl_map[guy_y // tile_height][(guy_x - 1) // tile_width] != '#':
                                         guy.rect.x -= 1
                                         guy_x -= 1
 
-                                        up_bull, down_bull, right_bull, left_bull = False, False, False, True
+                                        bull_left()
 
             elif right:  # ВПРАВО
 
@@ -386,7 +373,7 @@ def main():
                             guy.rect.x += 1
                             guy_x += 1
 
-                            up_bull, down_bull, right_bull, left_bull = False, False, True, False
+                            bull_right()
 
                         else:  # скольжение
                             pygame.time.wait(30)
@@ -396,14 +383,14 @@ def main():
                                         guy.rect.y -= 1
                                         guy_y -= 1
 
-                                        up_bull, down_bull, right_bull, left_bull = True, False, False, False
+                                        bull_up()
                             else:
                                 if guy_y < 500:
                                     if lvl_map[(guy_y + tile_height) // tile_height][guy_x // tile_width] != '#':
                                         guy.rect.y += 1
                                         guy_y += 1
 
-                                        up_bull, down_bull, right_bull, left_bull = False, True, False, False
+                                        bull_down()
 
                     else:
                         if lvl_map[guy_y // tile_height][(guy_x + tile_width) // tile_width] != '#' and \
@@ -411,7 +398,7 @@ def main():
                             guy.rect.x += 1
                             guy_x += 1
 
-                            up_bull, down_bull, right_bull, left_bull = False, False, True, False
+                            bull_right()
 
                         else:  # скольжение
                             pygame.time.wait(30)
@@ -421,14 +408,14 @@ def main():
                                         guy.rect.y -= 1
                                         guy_y -= 1
 
-                                        up_bull, down_bull, right_bull, left_bull = True, False, False, False
+                                        bull_up()
                             else:
                                 if guy_y < 500:
                                     if lvl_map[(guy_y + tile_height) // tile_height][guy_x // tile_width] != '#':
                                         guy.rect.y += 1
                                         guy_y += 1
 
-                                        up_bull, down_bull, right_bull, left_bull = False, True, False, False
+                                        bull_down()
 
             elif left:  # ВЛЕВО
 
@@ -439,7 +426,7 @@ def main():
                             guy.rect.x -= 1
                             guy_x -= 1
 
-                            up_bull, down_bull, right_bull, left_bull = False, False, False, True
+                            bull_left()
 
                         else:  # скольжение
                             pygame.time.wait(30)
@@ -449,14 +436,14 @@ def main():
                                         guy.rect.y -= 1
                                         guy_y -= 1
 
-                                        up_bull, down_bull, right_bull, left_bull = True, False, False, False
+                                        bull_up()
                             else:
                                 if guy_y < 500:
                                     if lvl_map[(guy_y + tile_height) // tile_height][guy_x // tile_width] != '#':
                                         guy.rect.y += 1
                                         guy_y += 1
 
-                                        up_bull, down_bull, right_bull, left_bull = False, True, False, False
+                                        bull_down()
 
                     else:
                         if lvl_map[guy_y // tile_height][(guy_x - 1) // tile_width] != '#' and \
@@ -464,7 +451,7 @@ def main():
                             guy.rect.x -= 1
                             guy_x -= 1
 
-                            up_bull, down_bull, right_bull, left_bull = False, False, False, True
+                            bull_left()
 
                         else:  # скольжение
                             pygame.time.wait(30)
@@ -474,60 +461,20 @@ def main():
                                         guy.rect.y -= 1
                                         guy_y -= 1
 
-                                        up_bull, down_bull, right_bull, left_bull = True, False, False, False
+                                        bull_up()
                             else:
                                 if guy_y < 500:
                                     if lvl_map[(guy_y + tile_height) // tile_height][guy_x // tile_width] != '#':
                                         guy.rect.y += 1
                                         guy_y += 1
 
-                                        up_bull, down_bull, right_bull, left_bull = False, True, False, False
+                                        bull_down()
 
             # движение быка
-            if up_bull:
-                if bull_up() == '-':
-                    if not bull_y > 0:
-                        del bull_doings[-1]
-                else:  # elif == '+'
-                    if not bull_y < 500:
-                        del bull_doings[-1]
-
-            elif down_bull:
-                if bull_up() == '-':
-                    if not bull_y > 0:
-                        del bull_doings[-1]
-                else:  # elif == '+'
-                    if not bull_y < 500:
-                        del bull_doings[-1]
-
-            elif right_bull:
-                if bull_right() == '-':
-                    if not bull_x > 0:
-                        del bull_doings[-1]
-                else:  # elif == '+'
-                    if not bull_x < 500:
-                        del bull_doings[-1]
-
-            elif left_bull:
-                if bull_right() == '-':
-                    if not bull_x > 0:
-                        del bull_doings[-1]
-                else:  # elif == '+'
-                    if not bull_x < 500:
-                        del bull_doings[-1]
-
             if 'y' in bull_doings[0]:
                 bull.rect.y = eval(bull_doings.pop(0))
-                if '+' in bull_doings[0]:
-                    bull_y += 1
-                else:
-                    bull_y -= 1
             else:  # elif 'x' in bull_doings[0]
                 bull.rect.x = eval(bull_doings.pop(0))
-                if '+' in bull_doings[0]:
-                    bull_x += 1
-                else:
-                    bull_x -= 1
 
             # изменяем ракурс камеры
             camera.update(guy)
