@@ -2,6 +2,7 @@ import pygame
 from sys import exit
 from os import path
 from random import sample
+from time import perf_counter
 
 pygame.init()
 screen = pygame.display.set_mode((500, 500))
@@ -35,7 +36,7 @@ def generate_map():
             map_file.write(line)
 
 
-generate_map()  # then change to changing every 15 seconds
+generate_map()
 
 
 def load_level(filename):
@@ -161,7 +162,7 @@ def terminate():  # if event.type == pygame.QUIT:
 
 
 lvl_map = load_level('map.txt')
-guy, bull, level_x, level_y = generate_level(load_level('map.txt'))
+guy, bull, level_x, level_y = generate_level(lvl_map)
 
 '''belongs to main'''
 directions = ['up']  # для того чтобы определить, в какую сторону скользить
@@ -225,7 +226,6 @@ def main():
                         del directions[-2]
 
         if start_screen_ends:
-
             if up:  # ВВЕРХ
 
                 # действия игрока
@@ -476,6 +476,13 @@ def main():
                 clock.tick(150)
             else:
                 clock.tick(75)
+
+            # проверка на столконовение
+            collide = bull.rect.colliderect(guy.rect)
+            if collide:
+                pygame.display.flip()
+                break
+
         pygame.display.flip()
 
 
