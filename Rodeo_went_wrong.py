@@ -164,7 +164,7 @@ lvl_map = load_level('map.txt')
 guy, bull, level_x, level_y = generate_level(load_level('map.txt'))
 
 '''belongs to main'''
-directions = ['up', 'up']  # для того чтобы определить, в какую сторону скользить
+directions = ['up']  # для того чтобы определить, в какую сторону скользить
 
 # список действий быка
 # запас хода быка по вертикали в две клетки (100 пикселей), т.к в начале игры между игроком и быком это расстояние
@@ -447,10 +447,21 @@ def main():
                                         bull_doings.append('bull.rect.y + 1')
 
             # движение быка
+            # тут могла быть рекурсия
             if 'y' in bull_doings[0]:
                 bull.rect.y = eval(bull_doings.pop(0))
+                if sliding:
+                    if 'y' in bull_doings[0]:
+                        bull.rect.y = eval(bull_doings.pop(0))
+                    else:
+                        bull.rect.x = eval(bull_doings.pop(0))
             else:  # elif 'x' in bull_doings[0]
                 bull.rect.x = eval(bull_doings.pop(0))
+                if sliding:
+                    if 'y' in bull_doings[0]:
+                        bull.rect.y = eval(bull_doings.pop(0))
+                    else:
+                        bull.rect.x = eval(bull_doings.pop(0))
 
             # изменяем ракурс камеры
             camera.update(guy)
@@ -462,9 +473,9 @@ def main():
             tiles_group.draw(screen)
             characters_group.draw(screen)
             if not sliding:  # normally
-                clock.tick(200)
+                clock.tick(150)
             else:
-                clock.tick(100)
+                clock.tick(75)
         pygame.display.flip()
 
 
