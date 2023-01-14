@@ -8,6 +8,11 @@ pygame.init()
 screen = pygame.display.set_mode((500, 500))
 clock = pygame.time.Clock()
 
+# переменные, значения которых изменятся в функциях
+tile_images, guy_image, bull_image, tile_width, \
+    tile_height, guy, bull, all_sprites, tiles_group, \
+    characters_group, level_x, level_y, directions, bull_doings, lvl_map = [None for _ in range(15)]
+
 
 def generate_map():
     """''
@@ -34,9 +39,6 @@ def generate_map():
                 line[5] = '*'
             line = ''.join(line)
             map_file.write(line)
-
-
-generate_map()
 
 
 def load_level(filename):
@@ -97,25 +99,6 @@ def load_image(img, color_key=None):
     return img
 
 
-tile_images = {
-    'wall': pygame.transform.scale(load_image('box.png'), (50, 50)),
-    'empty': pygame.transform.scale(load_image('sand.jpg'), (50, 50))
-}
-guy_image = pygame.transform.scale(load_image('guy_sprites.png'), (50, 50))
-bull_image = pygame.transform.scale(load_image('bull_sprites.png'), (50, 50))
-
-tile_width = tile_height = 50
-
-# основные персонажи
-guy = None
-bull = None
-
-# группы спрайтов
-all_sprites = pygame.sprite.Group()
-tiles_group = pygame.sprite.Group()
-characters_group = pygame.sprite.Group()
-
-
 def start_screen():
     title = "               Rodeo went wrong"
 
@@ -134,7 +117,10 @@ def start_screen():
 
 
 def final_screen():
-    pass
+    fon = pygame.transform.scale(load_image('game over.jpg'), (500, 500))
+    screen.blit(fon, (0, 0))
+
+    pygame.display.flip()
 
 
 def generate_level(level):
@@ -152,7 +138,7 @@ def generate_level(level):
                 Tile('empty', x, y)
                 the_bull = Character(bull_image, x, y)
 
-    # вернем игрока, а также размер поля в клетках
+    # вернем игрока и быка, а также размер поля в клетках
     return the_guy, the_bull, x, y
 
 
@@ -161,21 +147,54 @@ def terminate():  # if event.type == pygame.QUIT:
     exit()
 
 
-lvl_map = load_level('map.txt')
-guy, bull, level_x, level_y = generate_level(lvl_map)
+def main_generation():
+    global tile_height, tile_images, tile_width, \
+        guy_image, guy, bull, bull_doings, bull_image, \
+        all_sprites, level_x, level_y, directions, characters_group, tiles_group, lvl_map
+    generate_map()
 
-'''belongs to main'''
-directions = ['up']  # для того чтобы определить, в какую сторону скользить
+    tile_images = {
+        'wall': pygame.transform.scale(load_image('box.png'), (50, 50)),
+        'empty': pygame.transform.scale(load_image('sand.jpg'), (50, 50))
+    }
+    guy_image = pygame.transform.scale(load_image('guy_sprites.png'), (50, 50))
+    bull_image = pygame.transform.scale(load_image('bull_sprites.png'), (50, 50))
 
-# список действий быка
-# запас хода быка по вертикали в две клетки (100 пикселей), т.к в начале игры между игроком и быком это расстояние
-bull_doings = ['bull.rect.y - 1' for _ in range(150)]
+    tile_width = tile_height = 50
+
+    # основные персонажи
+    guy = None
+    bull = None
+
+    # группы спрайтов
+    all_sprites = pygame.sprite.Group()
+    tiles_group = pygame.sprite.Group()
+    characters_group = pygame.sprite.Group()
+
+    lvl_map = load_level('map.txt')
+    guy, bull, level_x, level_y = generate_level(lvl_map)
+
+    '''belongs to main'''
+    directions = ['up', 'up']  # для того чтобы определить, в какую сторону скользить
+
+    # список действий быка
+    # запас хода быка по вертикали в две клетки (100 пикселей), т.к в начале игры между игроком и быком это расстояние
+    bull_doings = ['bull.rect.y - 1' for _ in range(150)]
 
 
-def main():
+def writing_round(n):
+    font = pygame.font.Font(None, 80)
+
+    string_rendered = font.render(f'Round {n}', 1, pygame.Color((194, 24, 7)))
+    screen.blit(string_rendered, (140, 210))
+
+
+def main(ss):
+    main_generation()
+
     camera = Camera()
     start_screen()
-    start_screen_ends = False
+    start_screen_ends = ss
 
     # для правильной работы камеры
     guy_x = guy.rect.x
@@ -186,6 +205,10 @@ def main():
 
     sliding = False  # флаг скольжения
 
+    c = 0  # счётчик
+
+    write = False  # флаг на перезапись рекорда
+
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -193,6 +216,16 @@ def main():
 
             if event.type == pygame.KEYDOWN:
                 start_screen_ends = True
+                if not c:
+                    start_time = perf_counter()
+                    c += 1
+
+                    screen.fill('black')
+                    writing_round(c)
+                    pygame.display.flip()
+                    pygame.time.wait(1000)
+
+                    continue
 
                 if len(directions) > 2:  # (or == 3) для меньшего расхода памяти (если, бы игра длилась долго...)
                     del directions[0]
@@ -481,10 +514,45 @@ def main():
             collide = bull.rect.colliderect(guy.rect)
             if collide:
                 pygame.display.flip()
-                break
+                # на счёт рекорда
+                with open('data/record.txt', mode='r', encoding='utf-8') as file_with_record:
+                    if c > int(file_with_record.readline().strip()):  # побит ли предыдущий рекорд
+                        write = True
+                if write:
+                    with open('data/record.txt', mode='w', encoding='utf-8') as file_with_record:
+                        file_with_record.write(str(c))
+
+                while True:
+                    for event in pygame.event.get():
+                        if event.type == pygame.QUIT:
+                            terminate()
+                        # if event.type == pygame.KEYDOWN:
+                        #    main(True)
+                    final_screen()
+
+            if (perf_counter() - start_time).__round__() == 15 * c:
+                c += 1
+
+                screen.fill('black')
+                writing_round(c)
+                pygame.display.flip()
+                pygame.time.wait(1000)
+
+                main_generation()
+                # для правильной работы камеры
+                guy_x = guy.rect.x
+                guy_y = guy.rect.y
+
+                # флаги направления игрока
+                up, down, right, left = True, False, False, False
+
+                sliding = False  # флаг скольжения
+                continue
 
         pygame.display.flip()
 
+    terminate()
+
 
 if __name__ == '__main__':
-    main()
+    main(False)
