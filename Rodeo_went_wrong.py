@@ -1,7 +1,7 @@
 import pygame
 from sys import exit
 from os import path
-from random import sample
+from random import sample, choice
 from time import perf_counter
 
 pygame.init()
@@ -168,10 +168,17 @@ def main_generation():
 
     generate_map()
 
-    tile_images = {
-        'wall': pygame.transform.scale(load_image('box.png'), (50, 50)),
-        'empty': pygame.transform.scale(load_image('sand.jpg'), (50, 50))
-    }
+    texture_pack = choice([1, 2])
+    if texture_pack == 1:
+        tile_images = {
+            'wall': pygame.transform.scale(load_image('box.png'), (50, 50)),
+            'empty': pygame.transform.scale(load_image('sand.jpg'), (50, 50))
+        }
+    elif texture_pack == 2:
+        tile_images = {
+            'wall': pygame.transform.scale(load_image('old box.jpg'), (50, 50)),
+            'empty': pygame.transform.scale(load_image('cracked sand.jpg'), (50, 50))
+        }
     guy_image = pygame.transform.scale(load_image('guy_sprites.png'), (50, 50))
     bull_image = pygame.transform.scale(load_image('bull_sprites.png'), (50, 50))
 
