@@ -10,8 +10,8 @@ clock = pygame.time.Clock()
 
 # переменные, значения которых изменятся в функциях
 tile_images, guy_image, bull_image, tile_width, \
-    tile_height, guy, bull, all_sprites, tiles_group, \
-    characters_group, level_x, level_y, directions, bull_doings, lvl_map = [None for _ in range(15)]
+tile_height, guy, bull, all_sprites, tiles_group, \
+characters_group, level_x, level_y, directions, bull_doings, lvl_map = [None for _ in range(15)]
 
 
 def generate_map():
@@ -102,6 +102,7 @@ def load_image(img, color_key=None):
 def start_screen():
     title = "               Rodeo went wrong"
 
+    # отрисовка заднего фона
     fon = pygame.transform.scale(load_image('start_screen.webp'), (500, 500))
     screen.blit(fon, (0, 0))
 
@@ -116,10 +117,23 @@ def start_screen():
     screen.blit(string_rendered, (-37, 35))
 
 
-def final_screen():
+def final_screen(result):
+    # отрисовка заднего фона
     fon = pygame.transform.scale(load_image('game over.jpg'), (500, 500))
     screen.blit(fon, (0, 0))
 
+    # fetching record
+    with open('data/record.txt', mode='r', encoding='utf-8') as file_with_record:
+        record = file_with_record.readline().strip()
+
+    font = pygame.font.Font(None, 20)
+    string_rendered_result = font.render(f'Вы проиграли на {result}-ом раунде', 1, pygame.Color('yellow'))
+    string_rendered_record = font.render(f'Ваш рекорд - на {record}-ом', 1, pygame.Color('yellow'))
+    screen.blit(string_rendered_result, (10, 10))
+    screen.blit(string_rendered_record, (10, 30))
+    if result == int(record):
+        string_rendered_congrats = font.render('Поздравляю!', 1, pygame.Color('yellow'))
+        screen.blit(string_rendered_congrats, (10, 50))
     pygame.display.flip()
 
 
@@ -151,6 +165,7 @@ def main_generation():
     global tile_height, tile_images, tile_width, \
         guy_image, guy, bull, bull_doings, bull_image, \
         all_sprites, level_x, level_y, directions, characters_group, tiles_group, lvl_map
+
     generate_map()
 
     tile_images = {
@@ -189,12 +204,12 @@ def writing_round(n):
     screen.blit(string_rendered, (140, 210))
 
 
-def main(ss):
+def main():
     main_generation()
 
     camera = Camera()
     start_screen()
-    start_screen_ends = ss
+    start_screen_ends = False
 
     # для правильной работы камеры
     guy_x = guy.rect.x
@@ -524,11 +539,9 @@ def main(ss):
 
                 while True:
                     for event in pygame.event.get():
-                        if event.type == pygame.QUIT:
+                        if event.type in [pygame.QUIT, pygame.KEYDOWN]:
                             terminate()
-                        # if event.type == pygame.KEYDOWN:
-                        #    main(True)
-                    final_screen()
+                    final_screen(c)
 
             if (perf_counter() - start_time).__round__() == 15 * c:
                 c += 1
@@ -555,4 +568,4 @@ def main(ss):
 
 
 if __name__ == '__main__':
-    main(False)
+    main()
