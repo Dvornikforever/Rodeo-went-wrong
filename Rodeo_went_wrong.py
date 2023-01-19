@@ -4,6 +4,10 @@ from os import path
 from random import sample, choice
 from time import perf_counter
 
+pygame.mixer.init()
+pygame.mixer.music.load("data/BG_song.mp3")  # it was supposed to be connected with horses
+pygame.mixer.music.play(-1)
+
 pygame.init()
 screen = pygame.display.set_mode((500, 500))
 clock = pygame.time.Clock()
